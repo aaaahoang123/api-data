@@ -1,13 +1,11 @@
 package entity;
 
-import anotation.MyAnotation;
-import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Id;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
-public class JsonData<T> {
+public class JsonData {
     private String type;
     private String id;
     private HashMap<String, Object> attributes;
@@ -30,8 +28,8 @@ public class JsonData<T> {
         this.attributes = attributes;
     }
 
-    public static <T> JsonData<T> getInstance(T obj) {
-        JsonData<T> data = new JsonData<>();
+    public static <T> JsonData getInstance(T obj) {
+        JsonData data = new JsonData();
         HashMap<String, Object> map = new HashMap<>();
 
         for (Field f:obj.getClass().getDeclaredFields()) {

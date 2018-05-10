@@ -1,8 +1,7 @@
 package controller;
 
+import entity.ApiData;
 import com.google.gson.Gson;
-import com.sun.javafx.iio.ios.IosDescriptor;
-import entity.ApiListData;
 import entity.ApiOneData;
 import entity.JsonData;
 import entity.Student;
@@ -21,7 +20,7 @@ public class StudentServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         String json = BodyParser.parseBodyToJson(req.getReader());
-        ApiOneData data = new Gson().fromJson(json, ApiOneData.class);
+        ApiData<JsonData> data = new Gson().fromJson(json, ApiOneData.class);
 
         String name = data.getData().getAttributes().get("name").toString();
         String rollNumber = data.getData().getAttributes().get("rollNumber").toString();
@@ -35,15 +34,27 @@ public class StudentServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        ApiListData data = new ApiListData();
+        ApiData apiData;
 
-        List<Student> list = ofy().load().type(Student.class).list();
-        List<JsonData> listData = new ArrayList<>();
-        for(Student s: list) {
-            listData.add(JsonData.getInstance(s));
+        // Get All Student
+        if (req.getPathInfo() == null) {
+            apiData = new ApiData<List<JsonData>>();
+            List<Student> list = ofy().load().type(Student.class).list();
+            List<JsonData> listData = new ArrayList<>();
+            for(Student s: list) {
+                listData.add(JsonData.getInstance(s));
+            }
+            apiData.setData(listData);
         }
-        data.setData(listData);
-        throw new IOException("Ngu vl");
-        //resp.getWriter().print(new Gson().toJson(null));
+
+        //Get one student
+        else {
+            apiData = new ApiData<JsonData>();
+            //System.out.println(req.getPathInfo().replace("/", ""));
+            Student s = ofy().load().type(Student.class).id(Long.valueOf(req.getPathInfo().replace("/", ""))).now();
+            apiData.setData(JsonData.getInstance(s));
+        }
+
+        resp.getWriter().print(new Gson().toJson(apiData));
     }
 }
